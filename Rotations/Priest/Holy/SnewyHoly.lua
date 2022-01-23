@@ -323,18 +323,18 @@ end -- End Action List - Defensive
 -- Action List - Cooldown
 actionList.Cooldown = function()
     if ui.checked("Guardian Spirit Tank") then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= ui.value("Guardian Spirit Tank") then
-                if br.friend[i].role == "TANK" then
-                    if cast.guardianSpirit(br.friend[i].unit) then return true end
+        for i = 1, #friends do
+            if friends[i].hp <= ui.value("Guardian Spirit Tank") then
+                if friends[i].role == "TANK" then
+                    if cast.guardianSpirit(friends[i].unit) then return true end
                 end
             end
         end
     end
     if ui.checked("Guardian Spirit") then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= ui.value("Guardian Spirit") then
-                if cast.guardianSpirit(br.friend[i].unit) then return true end
+        for i = 1, #friends do
+            if friends[i].hp <= ui.value("Guardian Spirit") then
+                if cast.guardianSpirit(friends[i].unit) then return true end
             end
         end
     end
@@ -419,7 +419,7 @@ actionList.Healing = function()
             if #sanctifyUnits < 12 then
                 loc = br.getBestGroundCircleLocation(sanctifyUnits, ui.value("Holy Word: Sanctify Targets"), 6, 10)
             else
-                if br.castWiseAoEHeal(br.friend, spell.holyWordSanctify, 10, ui.value("Holy Word: Sanctify"), ui.value("Holy Word: Sanctify Targets"), 6, false, false) then return true end
+                if br.castWiseAoEHeal(friends, spell.holyWordSanctify, 10, ui.value("Holy Word: Sanctify"), ui.value("Holy Word: Sanctify Targets"), 6, false, false) then return true end
             end
             if loc ~= nil then
                 if br.castGroundAtLocation(loc, spell.holyWordSanctify) then return true end
@@ -432,16 +432,16 @@ actionList.Healing = function()
         end
     end
     if ui.checked("Prayer of Mending") and inCombat then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= ui.value("Prayer of Mending") and not buff.prayerOfMending.exists(br.friend[i].unit) then
-                if cast.prayerOfMending(br.friend[i].unit) then return true end
+        for i = 1, #friends do
+            if friends[i].hp <= ui.value("Prayer of Mending") and not buff.prayerOfMending.exists(friends[i].unit) then
+                if cast.prayerOfMending(friends[i].unit) then return true end
             end
         end
     end
     if ui.checked("Renew Tank") then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= ui.value("Renew Tank") and not buff.renew.exists(br.friend[i].unit) and br._G.UnitGroupRolesAssigned(br.friend[i].unit) == "TANK" then
-                if cast.renew(br.friend[i].unit) then return true end
+        for i = 1, #friends do
+            if friends[i].hp <= ui.value("Renew Tank") and not buff.renew.exists(friends[i].unit) and br._G.UnitGroupRolesAssigned(friends[i].unit) == "TANK" then
+                if cast.renew(friends[i].unit) then return true end
             end
         end
     end
@@ -456,7 +456,7 @@ actionList.Healing = function()
         end
     end
     if ui.checked("Prayer of Healing") and not moving then
-        if br.castWiseAoEHeal(br.friend, spell.prayerOfHealing, 40, ui.value("Prayer of Healing"), ui.value("Prayer of Healing Targets"), 5, false, true) then return true end
+        if br.castWiseAoEHeal(friends, spell.prayerOfHealing, 40, ui.value("Prayer of Healing"), ui.value("Prayer of Healing Targets"), 5, false, true) then return true end
     end
     if ui.checked("Divine Star") and talent.divineStar then
         if unit.hp(lowestUnit) <= ui.value("Divine Star") and unit.facing(lowestUnit) and br.getUnitsInRect(5, 24, false, ui.value("Divine Star")) >= 1 then
@@ -469,15 +469,15 @@ actionList.Healing = function()
         end
     end
     if ui.checked("Renew") then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= br.getValue("Renew") and not buff.renew.exists(br.friend[i].unit) and renewCount < ui.value("Maximum Renew") then
-                if cast.renew(br.friend[i].unit) then return true end
+        for i = 1, #friends do
+            if friends[i].hp <= br.getValue("Renew") and not buff.renew.exists(friends[i].unit) and renewCount < ui.value("Maximum Renew") then
+                if cast.renew(friends[i].unit) then return true end
             end
         end
     end
     if ui.checked("Fae Guardians") and covenant.nightFae.active then
-        for i = 1, #br.friend do
-            if br.friend[i].hp <= br.getValue("Fae Guardians") then
+        for i = 1, #friends do
+            if friends[i].hp <= br.getValue("Fae Guardians") then
                 if cast.faeGuardians() then return true end
             end
         end
@@ -598,6 +598,13 @@ local function runRotation()
     bindingHealUnits = {}
     hp = unit.hp("player")
     lowestUnit = friends[1].unit
+    if #friends > 1 then
+        for i = 1, #friends do
+            if friends[i].hp < unit.hp(lowestUnit) then
+                lowestUnit = friends[i].unit
+            end
+        end
+    end
     mp = br.player.power.mana.percent()
     renewCount = buff.renew.count()
     sanctifyUnits = {}
